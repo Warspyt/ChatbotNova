@@ -255,6 +255,12 @@ app.post("/webhook", async (req, res) => {
 // 🚀 INICIO SERVIDOR
 // ===============================
 const PORT = process.env.PORT || 3000;
+
+app.get("/", (req, res) => {
+  res.send("🤖 Chatbot Nova Transmedia activo");
+});
+
+
 app.listen(PORT, () =>
   console.log(`🤖 Bot PreICFES activo en puerto ${PORT}`)
 );
