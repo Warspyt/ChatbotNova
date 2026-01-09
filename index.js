@@ -226,41 +226,55 @@ app.post("/webhook", async (req, res) => {
     const msg = entry?.changes?.[0]?.value?.messages?.[0];
 
     if (!msg || !msg.text) {
+      console.log("⚠️ No hay mensaje de texto");
       return res.sendStatus(200);
     }
 
     const from = msg.from;
     const text = msg.text.body;
-    const reply = getResponse(from, text);
+
+    console.log("📨 De:", from);
+    console.log("💬 Texto:", text);
+
+    // ✅ AWAIT AQUÍ
+    const reply = await getResponse(from, text);
+
     const WHATSAPP_TOKEN = process.env.WHATSAPP_TOKEN?.trim();
     const PHONE_NUMBER_ID = process.env.PHONE_NUMBER_ID?.trim();
 
-    await fetch(
-    `https://graph.facebook.com/v17.0/${PHONE_NUMBER_ID}/messages`,
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${WHATSAPP_TOKEN}`,
-      },
-      body: JSON.stringify({
-        messaging_product: "whatsapp",
-        to: from,
-        type: "text",
-        text: {
-          body: reply,
-        },
-      }),
+    if (!WHATSAPP_TOKEN || !PHONE_NUMBER_ID) {
+      console.error("❌ Variables de entorno faltantes");
+      return res.sendStatus(200);
     }
-  );
 
+    await fetch(
+      `https://graph.facebook.com/v17.0/${PHONE_NUMBER_ID}/messages`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${WHATSAPP_TOKEN}`,
+        },
+        body: JSON.stringify({
+          messaging_product: "whatsapp",
+          to: from,
+          type: "text",
+          text: {
+            body: reply,
+          },
+        }),
+      }
+    );
+
+    console.log("✅ Respuesta enviada");
 
     res.sendStatus(200);
   } catch (error) {
     console.error("❌ Error:", error);
-    res.sendStatus(500);
+    res.sendStatus(200);
   }
 });
+
 
 // ===============================
 // 🚀 INICIO SERVIDOR
