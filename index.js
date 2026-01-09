@@ -218,11 +218,16 @@ app.get("/webhook", (req, res) => {
 // 📩 RECEPCIÓN MENSAJES (POST)
 // ===============================
 app.post("/webhook", async (req, res) => {
+  console.log("📩 Evento recibido de WhatsApp");
+  console.log(JSON.stringify(req.body, null, 2));
+
   try {
     const entry = req.body.entry?.[0];
     const msg = entry?.changes?.[0]?.value?.messages?.[0];
 
-    if (!msg?.text?.body) return res.sendStatus(200);
+    if (!msg || !msg.text) {
+      return res.sendStatus(200);
+    }
 
     const from = msg.from;
     const text = msg.text.body;
