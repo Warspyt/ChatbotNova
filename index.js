@@ -11,6 +11,7 @@ app.use(express.json());
 // 📌 CONFIGURACIÓN
 // ===============================
 const VERIFY_TOKEN = "nova_preicfes_token";
+const processedMessages = new Set();
 
 // ===============================
 // 🧠 MENÚ DEL BOT
@@ -223,7 +224,25 @@ app.post("/webhook", async (req, res) => {
 
   try {
     const entry = req.body.entry?.[0];
-    const msg = entry?.changes?.[0]?.value?.messages?.[0];
+    const value = entry?.changes?.[0]?.value;
+    const msg = value?.messages?.[0];
+
+    if (!msg || !msg.text) {
+      return res.sendStatus(200);
+    }
+
+    // 🔁 evitar duplicados
+    if (processedMessages.has(msg.id)) {
+      console.log("🔁 Mensaje duplicado ignorado");
+      return res.sendStatus(200);
+    }
+    processedMessages.add(msg.id);
+
+    // 🛑 ignorar mensajes del propio bot
+    if (msg.from === value.metadata.phone_number_id) {
+      console.log("🤖 Mensaje propio ignorado");
+      return res.sendStatus(200);
+    }
 
     if (!msg || !msg.text) {
       console.log("⚠️ No hay mensaje de texto");
@@ -236,8 +255,9 @@ app.post("/webhook", async (req, res) => {
     console.log("📨 De:", from);
     console.log("💬 Texto:", text);
 
-    // ✅ AWAIT AQUÍ
-    const reply = await getResponse(from, text);
+    // const reply = getResponse(from, text);
+    const reply = "Hola 👋 estoy funcionando correctamente";
+
 
     const WHATSAPP_TOKEN = process.env.WHATSAPP_TOKEN?.trim();
     const PHONE_NUMBER_ID = process.env.PHONE_NUMBER_ID?.trim();
