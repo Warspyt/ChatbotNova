@@ -222,52 +222,30 @@ app.post("/webhook", async (req, res) => {
   console.log("📩 Evento recibido de WhatsApp");
   console.log(JSON.stringify(req.body, null, 2));
 
+  const entry = req.body.entry?.[0];
+  const value = entry?.changes?.[0]?.value;
+  const msg = value?.messages?.[0];
+
+  if (!msg || !msg.text) {
+    return res.sendStatus(200);
+  }
+
+  const from = msg.from;
+  const text = msg.text.body;
+
+  console.log("📨 De:", from);
+  console.log("💬 Texto:", text);
+
+  // ✅ RESPONDER INMEDIATO AL WEBHOOK
+  res.sendStatus(200);
+
   try {
-    const entry = req.body.entry?.[0];
-    const value = entry?.changes?.[0]?.value;
-    const msg = value?.messages?.[0];
-
-    if (!msg || !msg.text) {
-      return res.sendStatus(200);
-    }
-
-    // 🔁 evitar duplicados
-    if (processedMessages.has(msg.id)) {
-      console.log("🔁 Mensaje duplicado ignorado");
-      return res.sendStatus(200);
-    }
-    processedMessages.add(msg.id);
-
-    // 🛑 ignorar mensajes del propio bot
-    if (msg.from === value.metadata.phone_number_id) {
-      console.log("🤖 Mensaje propio ignorado");
-      return res.sendStatus(200);
-    }
-
-    if (!msg || !msg.text) {
-      console.log("⚠️ No hay mensaje de texto");
-      return res.sendStatus(200);
-    }
-
-    const from = msg.from;
-    const text = msg.text.body;
-
-    console.log("📨 De:", from);
-    console.log("💬 Texto:", text);
-
-    // const reply = getResponse(from, text);
-    const reply = "Hola 👋 estoy funcionando correctamente";
-
+    const reply = getResponse(from, text);
 
     const WHATSAPP_TOKEN = process.env.WHATSAPP_TOKEN?.trim();
     const PHONE_NUMBER_ID = process.env.PHONE_NUMBER_ID?.trim();
 
-    if (!WHATSAPP_TOKEN || !PHONE_NUMBER_ID) {
-      console.error("❌ Variables de entorno faltantes");
-      return res.sendStatus(200);
-    }
-
-    await fetch(
+    const response = await fetch(
       `https://graph.facebook.com/v17.0/${PHONE_NUMBER_ID}/messages`,
       {
         method: "POST",
@@ -279,21 +257,18 @@ app.post("/webhook", async (req, res) => {
           messaging_product: "whatsapp",
           to: from,
           type: "text",
-          text: {
-            body: reply,
-          },
+          text: { body: reply },
         }),
       }
     );
 
-    console.log("✅ Respuesta enviada");
-
-    res.sendStatus(200);
+    const data = await response.json();
+    console.log("📤 Respuesta Meta:", data);
   } catch (error) {
-    console.error("❌ Error:", error);
-    res.sendStatus(200);
+    console.error("❌ Error enviando mensaje:", error);
   }
 });
+
 
 
 // ===============================
