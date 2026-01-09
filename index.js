@@ -260,7 +260,7 @@ app.get("/", (req, res) => {
   res.send("🤖 Chatbot Nova Transmedia activo");
 });
 
+app.listen(PORT, "0.0.0.0", () => {
+  console.log(`🤖 Bot PreICFES activo en puerto ${PORT}`);
+});
 
-app.listen(PORT, () =>
-  console.log(`🤖 Bot PreICFES activo en puerto ${PORT}`)
-);
