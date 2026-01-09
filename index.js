@@ -232,22 +232,28 @@ app.post("/webhook", async (req, res) => {
     const from = msg.from;
     const text = msg.text.body;
     const reply = getResponse(from, text);
+    const WHATSAPP_TOKEN = process.env.WHATSAPP_TOKEN?.trim();
+    const PHONE_NUMBER_ID = process.env.PHONE_NUMBER_ID?.trim();
 
     await fetch(
-      `https://graph.facebook.com/v17.0/${process.env.PHONE_NUMBER_ID}/messages`,
-      {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${process.env.WHATSAPP_TOKEN}`,
-          "Content-Type": "application/json",
+    `https://graph.facebook.com/v17.0/${PHONE_NUMBER_ID}/messages`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${WHATSAPP_TOKEN}`,
+      },
+      body: JSON.stringify({
+        messaging_product: "whatsapp",
+        to: from,
+        type: "text",
+        text: {
+          body: reply,
         },
-        body: JSON.stringify({
-          messaging_product: "whatsapp",
-          to: from,
-          text: { body: reply },
-        }),
-      }
-    );
+      }),
+    }
+  );
+
 
     res.sendStatus(200);
   } catch (error) {
