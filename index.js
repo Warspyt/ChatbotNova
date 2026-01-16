@@ -69,7 +69,7 @@ Incluye simulacros, clases en vivo, grabaciones y acompañamiento.
 
   link_brochure: {
     text: `📎 Brochure del curso:
-👉 https://drive.google.com/file/d/1_hIO2nFde4rQx0TU3Z2OqaTMbyf71wim/view?usp=drive_link
+👉 https://drive.google.com/file/d/18qdSiNAhEZ02LRnTOy6UwEJ_W0Q03H96/view
 
 1️⃣ Volver al menú`,
     next: { "1": "start" },
